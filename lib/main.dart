@@ -21,6 +21,7 @@ class _HelloWorldState extends State<HelloWorld> {
         ),
         body: ArCoreView(
           onArCoreViewCreated: _onArCoreViewCreated,
+          enableTapRecognizer: true,
         ),
       ),
     );
@@ -28,6 +29,8 @@ class _HelloWorldState extends State<HelloWorld> {
 
   void _onArCoreViewCreated(ArCoreController controller) {
     arCoreController = controller;
+    arCoreController.onNodeTap = (name) => onTapHandler(name);
+    arCoreController.onPlaneTap = _handleOnPlaneTap;
 
     _addSphere(arCoreController);
     _addCylindre(arCoreController);
@@ -35,8 +38,7 @@ class _HelloWorldState extends State<HelloWorld> {
   }
 
   void _addSphere(ArCoreController controller) {
-    final material = ArCoreMaterial(
-        color: Color.fromARGB(120, 66, 134, 244));
+    final material = ArCoreMaterial(color: Color.fromARGB(120, 66, 134, 244));
     final sphere = ArCoreSphere(
       materials: [material],
       radius: 0.1,
@@ -79,6 +81,48 @@ class _HelloWorldState extends State<HelloWorld> {
       position: vector.Vector3(-0.5, 0.5, -3.5),
     );
     controller.addArCoreNode(node);
+  }
+
+  void onTapHandler(String name) {
+    showDialog<void>(
+      context: context,
+      builder: (BuildContext context) =>
+          AlertDialog(content: Text('onNodeTap on $name')),
+    );
+  }
+
+  void _handleOnPlaneTap(List<ArCoreHitTestResult> hits) {
+    final hit = hits.first;
+
+    final moonMaterial = ArCoreMaterial(color: Colors.grey);
+
+    final moonShape = ArCoreSphere(
+      materials: [moonMaterial],
+      radius: 0.03,
+    );
+
+    final moon = ArCoreNode(
+      shape: moonShape,
+      position: vector.Vector3(0.2, 0, 0),
+      rotation: vector.Vector4(0, 0, 0, 0),
+    );
+
+    final earthMaterial = ArCoreMaterial(
+        //color: Color.fromARGB(120, 66, 134, 244), texture: "earth.jpg");
+      color: Color.fromARGB(120, 66, 134, 244));
+
+    final earthShape = ArCoreSphere(
+      materials: [earthMaterial],
+      radius: 0.1,
+    );
+
+//    final earth = ArCoreNode(
+//        shape: earthShape,
+//        children: [moon],
+//        position: plane.pose.translation + vector.Vector3(0.0, 1.0, 0.0),
+//        rotation: plane.pose.rotation);
+
+    arCoreController.addArCoreNodeWithAnchor(moon);
   }
 
   @override
